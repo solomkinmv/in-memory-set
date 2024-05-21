@@ -54,6 +54,7 @@
                             <BP_JVM_VERSION>21</BP_JVM_VERSION>
                         </env>
                     </image>
+                    <imageName>solomkinmv/in-memory-set-service</imageName>
                 </configuration>
             </plugin>
         </plugins>
