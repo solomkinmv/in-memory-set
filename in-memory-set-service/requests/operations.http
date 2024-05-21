@@ -1,0 +1,4 @@
+GET {{host}}/items/item
+Accept: application/json
+
+###
