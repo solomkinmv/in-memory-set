@@ -46,12 +46,9 @@ jobs:
       - name: Build Docker image
         run: |
           cd in-memory-set-service
-          ./mvnw -Pnative spring-boot:build-image -Dspring.native.build-image.builder-platform=linux/arm64
+          ./mvnw -Pnative spring-boot:build-image
+          docker buildx build --platform linux/arm/v8 --tag solomkinmv/in-memory-set-service:latest --push .
 
       - name: Increment version
         run: |
           echo 'not implemented yet'
-
-      - name: Push Docker image
-        run: |
-          docker push --all-tags solomkinmv/in-memory-set-service
