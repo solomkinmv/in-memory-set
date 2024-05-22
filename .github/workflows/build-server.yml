@@ -31,15 +31,6 @@ jobs:
           distribution: 'corretto'
           cache: maven
 
-      - name: Build Docker image
-        run: |
-          cd in-memory-set-service
-          ./mvnw spring-boot:build-image
-
-      - name: Increment version
-        run: |
-          echo 'not implemented yet'
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -51,6 +42,15 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          cd in-memory-set-service
+          ./mvnw spring-boot:build-image
+
+      - name: Increment version
+        run: |
+          echo 'not implemented yet'
 
       - name: Push Docker image
         run: |
