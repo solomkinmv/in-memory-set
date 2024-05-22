@@ -1,19 +1,24 @@
-# Welcome to your CDK Java project!
+# CDK Infra Stack
 
-You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`InMemorySetInfraStack`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
+This stack creates VPC, Security Group and EC2 instance with Elastic IP.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Prerequisites
 
-It is a [Maven](https://maven.apache.org/) based project, so you can open this project with any Maven compatible Java IDE to build and run tests.
+1. Java 21
+2. AWS CDK
 
-## Useful commands
+## Commands
 
- * `mvn package`     compile and run tests
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
+List of useful commands to run.
 
-Enjoy!
+### Build and run tests
+
+```bash
+./mvnw package
+```
+
+### Deploy
+
+```bash
+cdk deploy
+```
