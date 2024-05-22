@@ -46,7 +46,7 @@ jobs:
       - name: Build Docker image
         run: |
           cd in-memory-set-service
-          ./mvnw -Pnative spring-boot:build-image
+          ./mvnw -Pnative spring-boot:build-image -Dspring.native.build-image.builder-platform=linux/arm64
 
       - name: Increment version
         run: |
