@@ -1,4 +1,4 @@
-package in.solomk.infra;
+package in.solomk.inmemoryset.infra;
 
 import software.amazon.awscdk.App;
 
