@@ -1,4 +1,4 @@
-package in.solomk.inmemoryset.it;
+package in.solomk.inmemoryset.service.it;
 
 import org.springframework.boot.test.context.SpringBootTest;
 
