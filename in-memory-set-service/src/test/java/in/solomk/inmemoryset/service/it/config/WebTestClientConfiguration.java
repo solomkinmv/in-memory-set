@@ -1,4 +1,4 @@
-package in.solomk.inmemoryset.it.config;
+package in.solomk.inmemoryset.service.it.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.ApplicationContext;
