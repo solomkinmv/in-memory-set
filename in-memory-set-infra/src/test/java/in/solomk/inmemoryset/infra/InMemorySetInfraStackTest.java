@@ -1,6 +1,5 @@
-package in.solomk;
+package in.solomk.inmemoryset.infra;
 
-import in.solomk.infra.InMemorySetInfraStack;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.assertions.Template;
 
@@ -17,10 +16,9 @@ public class InMemorySetInfraStackTest {
 
         Template template = Template.fromStack(stack);
 
-//        template.hasResourceProperties("AWS::SQS::Queue", new HashMap<String, Number>() {{
-//          put("VisibilityTimeout", 300);
-//        }});
-//
-//        template.resourceCountIs("AWS::SNS::Topic", 1);
+        template.resourceCountIs("AWS::EC2::Instance", 1);
+        template.resourceCountIs("AWS::EC2::SecurityGroup", 1);
+        template.resourceCountIs("AWS::EC2::VPC", 1);
+        template.resourceCountIs("AWS::EC2::Subnet", 2);
     }
 }
