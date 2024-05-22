@@ -21,6 +21,9 @@ import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
 public class InMemorySetInfraStack extends Stack {
+
+    private static final String IMAGE_NAME = "solomkinmv/in-memory-set-service";
+
     public InMemorySetInfraStack(final Construct parent, final String id) {
         this(parent, id, null);
     }
@@ -61,8 +64,8 @@ public class InMemorySetInfraStack extends Stack {
                 yum install docker -y
                 service docker start
                 usermod -a -G docker ec2-user
-                docker run -d -p 80:8080 solomkinmv/in-memory-set-service --rm
-                """;
+                docker run -d -p 80:8080 %s --rm
+                """.formatted(IMAGE_NAME);
         userData.addCommands(userDataScript);
         instance.addUserData(userData.render());
 
