@@ -21,10 +21,10 @@ jobs:
         with:
           java-version: '21'
           distribution: 'corretto'
-          cache: gradle
+          cache: maven
 
       - name: Build with Gradle
         run: |
           cd in-memory-set-service
-          ./mvnw spring-boot:build-image
+          ./mvnw install
 

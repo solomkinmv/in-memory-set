@@ -25,6 +25,6 @@ jobs:
 
       - name: Build with Maven
         run: |
-          cd in-memory-set-stack
+          cd in-memory-set-infra
           ./mvnw package
 
