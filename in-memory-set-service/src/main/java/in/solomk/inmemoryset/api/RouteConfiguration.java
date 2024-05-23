@@ -2,6 +2,7 @@ package in.solomk.inmemoryset.api;
 
 import in.solomk.inmemoryset.api.handler.AddItemHandler;
 import in.solomk.inmemoryset.api.handler.HasItemHandler;
+import in.solomk.inmemoryset.api.handler.RemoveItemHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,11 +17,13 @@ public class RouteConfiguration {
     @Bean
     RouterFunction<ServerResponse> routerFunction(
             HasItemHandler hasItemHandler,
-            AddItemHandler addItemHandler) {
+            AddItemHandler addItemHandler,
+            RemoveItemHandler removeItemHandler) {
 
         return RouterFunctions.route()
                 .GET("/items/{itemValue}", hasItemHandler)
                 .POST("/items/{itemValue}", addItemHandler)
+                .DELETE("/items/{itemValue}", removeItemHandler)
                 .build();
 
     }
