@@ -1,4 +1,57 @@
-GET {{host}}/items/item
+@itemValue = 1
+
+### Check if set contains missing item
+
+GET {{host}}/items/{{itemValue}}
 Accept: application/json
 
-###
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+%}
+
+### Add item to set
+
+POST {{host}}/items/{{itemValue}}
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.status === "SUCCESS", "Response status field is not SUCCESS")
+    });
+%}
+
+### Check if set contains added item
+
+GET {{host}}/items/{{itemValue}}
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Remove item from set
+
+DELETE {{host}}/items/{{itemValue}}
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.status === "SUCCESS", "Response status field is not SUCCESS")
+    });
+%}
+
+### Check if set contains removed item
+
+GET {{host}}/items/{{itemValue}}
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function () {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+%}
