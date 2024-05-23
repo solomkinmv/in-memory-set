@@ -1,6 +1,6 @@
-package in.solomk.inmemoryset.service.api;
+package in.solomk.inmemoryset.api;
 
-import in.solomk.inmemoryset.service.api.handler.HasItemHandler;
+import in.solomk.inmemoryset.api.handler.HasItemHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

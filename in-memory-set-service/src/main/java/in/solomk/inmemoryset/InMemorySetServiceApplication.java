@@ -1,4 +1,4 @@
-package in.solomk.inmemoryset.service;
+package in.solomk.inmemoryset;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
