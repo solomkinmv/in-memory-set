@@ -15,4 +15,10 @@ public class ServiceTestClient {
                             .uri("/items/" + itemValue)
                             .exchange();
     }
+
+    public WebTestClient.ResponseSpec addItem(String itemValue) {
+        return webTestClient.post()
+                            .uri("/items/" + itemValue)
+                            .exchange();
+    }
 }
