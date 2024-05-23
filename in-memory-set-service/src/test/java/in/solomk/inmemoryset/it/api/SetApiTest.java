@@ -109,4 +109,57 @@ public class SetApiTest extends BaseIntegrationTest {
                     .jsonPath("$.status").isEqualTo(HttpStatus.BAD_REQUEST.value());
         }
     }
+
+    @Nested
+    class RemoveItemTests {
+        @Test
+        void givenEmptySet_whenRemoveItem_thenReturnsOk() {
+            serviceTestClient.removeItem(nextItemValueAsString())
+                    .expectStatus()
+                    .isOk()
+                    .expectBody()
+                    .json("""
+                            {
+                                "status": "FAILURE"
+                            }
+                            """);
+        }
+
+        @Test
+        void givenSetWithItem_whenRemoveItem_thenReturnsOk() {
+            var itemValue = nextItemValueAsString();
+            serviceTestClient.addItem(itemValue)
+                    .expectStatus()
+                    .isOk();
+
+            serviceTestClient.removeItem(itemValue)
+                    .expectStatus()
+                    .isOk()
+                    .expectBody()
+                    .json("""
+                            {
+                                "status": "SUCCESS"
+                            }
+                            """);
+        }
+
+        @Test
+        void givenNonIntegerItemValue_whenRemoveItem_thenReturnsBadRequest() {
+            serviceTestClient.removeItem("notAnInteger")
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectBody()
+                    .json("""
+                            {
+                                "message": "Item value should be an integer: 'notAnInteger'"
+                            }
+                            """)
+                    .jsonPath("$.incidentId").isNotEmpty()
+                    .jsonPath("$.error").isNotEmpty()
+                    .jsonPath("$.path").isNotEmpty()
+                    .jsonPath("$.requestId").isNotEmpty()
+                    .jsonPath("$.timestamp").isNotEmpty()
+                    .jsonPath("$.status").isEqualTo(HttpStatus.BAD_REQUEST.value());
+        }
+    }
 }
