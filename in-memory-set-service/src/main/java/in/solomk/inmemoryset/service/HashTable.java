@@ -5,18 +5,23 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 /**
  * Implementation of a hash table with open addressing.
  */
 @Slf4j
 public class HashTable {
+    private static final long DELETED = Integer.MIN_VALUE - 1L;
     private final int initialCapacity;
     private final double loadFactor;
     private final double growthFactor;
     private final double downscalingFactor;
-    private Integer[] array;
+    private volatile Long[] array;
     @Getter
-    private int size;
+    private volatile int size;
+
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public HashTable(int initialCapacity, double loadFactor, double growthFactor, double downscalingFactor) {
         validateInputParameters(initialCapacity, loadFactor, growthFactor, downscalingFactor);
@@ -25,7 +30,7 @@ public class HashTable {
         this.loadFactor = loadFactor;
         this.growthFactor = growthFactor;
         this.downscalingFactor = downscalingFactor;
-        array = new Integer[initialCapacity];
+        array = new Long[initialCapacity];
         size = 0;
         log.debug("Created HashTable with initial capacity {}, load factor {}, and growth factor {}",
                 initialCapacity, loadFactor, growthFactor);
@@ -41,63 +46,78 @@ public class HashTable {
     }
 
     public boolean add(int value) {
-        if (contains(value)) {
-            return false;
-        }
-
-        if (isFull()) {
-            if (growthFactor == 1) {
-                log.debug("HashTable is full and can't be resized. Throwing exception.");
-                throw new InvalidSetStateException("HashTable is full and can't be resized. Please remove some elements first.");
+        lock.writeLock().lock();
+        try {
+            if (contains(value)) {
+                return false;
             }
-            log.debug("HashTable is full. Resizing.");
-            resize();
-        }
 
-        int index = hash(value);
-        while (array[index] != null) {
-            index = (index + 1) % array.length;
-        }
+            if (isFull()) {
+                if (growthFactor == 1) {
+                    log.debug("HashTable is full and can't be resized. Throwing exception.");
+                    throw new InvalidSetStateException("HashTable is full and can't be resized. Please remove some elements first.");
+                }
+                log.debug("HashTable is full. Resizing.");
+                resize();
+            }
 
-        array[index] = value;
-        size++;
-        return true;
+            int index = hash(value);
+            while (array[index] != null && array[index] != DELETED) {
+                index = (index + 1) % array.length;
+            }
+
+            array[index] = (long) value;
+            size++;
+            return true;
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     public boolean remove(int value) {
-        if (!contains(value)) {
-            return false;
+        lock.writeLock().lock();
+        try {
+            if (!contains(value)) {
+                return false;
+            }
+
+            int index = hash(value);
+            while (array[index] != null) {
+                if (array[index].equals((long) value)) {
+                    array[index] = DELETED;
+                    size--;
+                    if (shouldDownscale()) {
+                        downscale();
+                    }
+                    return true;
+                }
+                index = (index + 1) % array.length;
+            }
+            return true;
+        } finally {
+            lock.writeLock().unlock();
         }
-
-        int index = hash(value);
-        while (!array[index].equals(value)) {
-            index = (index + 1) % array.length;
-        }
-
-        array[index] = null;
-        size--;
-
-        if (shouldDownscale()) {
-            downscale();
-        }
-
-        return true;
     }
 
     public boolean contains(int value) {
-        int index = hash(value);
-        final int initialIndex = index;
-        while (array[index] != null) {
-            if (array[index].equals(value)) {
-                return true;
-            }
-            index = (index + 1) % array.length;
+        lock.readLock().lock();
+        try {
+            int index = hash(value);
+            final int initialIndex = index;
+            while (array[index] != null) {
+                if (array[index].equals((long) value)) {
+                    return true;
+                }
+                index = (index + 1) % array.length;
 
-            if (index == initialIndex) {
-                break;
+                if (index == initialIndex) {
+                    break;
+                }
             }
+            return false;
+        } finally {
+            lock.readLock().unlock();
         }
-        return false;
     }
 
     boolean isFull() {
@@ -109,19 +129,19 @@ public class HashTable {
     }
 
     private void resize() {
-        Integer[] oldArray = array;
+        Long[] oldArray = array;
         long nextCapacity = (long) (array.length * growthFactor);
         if (nextCapacity <= initialCapacity) {
             nextCapacity = initialCapacity;
         } else if (nextCapacity > Integer.MAX_VALUE) {
             nextCapacity = Integer.MAX_VALUE;
         }
-        array = new Integer[(int) nextCapacity];
+        array = new Long[(int) nextCapacity];
         size = 0;
 
-        for (Integer value : oldArray) {
-            if (value != null) {
-                add(value);
+        for (Long value : oldArray) {
+            if (value != null && value != DELETED) {
+                add(Math.toIntExact(value));
             }
         }
     }
@@ -131,14 +151,14 @@ public class HashTable {
     }
 
     private void downscale() {
-        Integer[] oldArray = array;
+        Long[] oldArray = array;
         int nextCapacity = Math.max((int) (array.length * downscalingFactor), initialCapacity);
-        array = new Integer[nextCapacity];
+        array = new Long[nextCapacity];
         size = 0;
 
-        for (Integer value : oldArray) {
-            if (value != null) {
-                add(value);
+        for (Long value : oldArray) {
+            if (value != null && value != DELETED) {
+                add(Math.toIntExact(value));
             }
         }
     }
