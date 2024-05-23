@@ -1,6 +1,7 @@
 package in.solomk.inmemoryset.service;
 
 import in.solomk.inmemoryset.exception.InvalidSetStateException;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
@@ -9,8 +10,12 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -280,26 +285,6 @@ class HashTableTest {
         }
 
         @Test
-        @Disabled
-        @Timeout(value = 5)
-        // todo: move concurrency tests to separate class
-        void givenConcurrentModifications_whenAdd_thenBehavesCorrectly() throws InterruptedException {
-            try (ExecutorService executorService = Executors.newFixedThreadPool(10)) {
-
-                for (int i = 0; i < 1_000_000; i++) {
-                    int finalI = i;
-                    executorService.submit(() -> hashTable.add(finalI));
-                }
-
-                executorService.shutdown();
-                //noinspection ResultOfMethodCallIgnored
-                executorService.awaitTermination(1, TimeUnit.MINUTES);
-            }
-
-            assertThat(hashTable.getSize()).isEqualTo(1_000_000);
-        }
-
-        @Test
         @Timeout(value = 5)
         void givenLargeNumberOfElements_whenAdd_thenPerformanceIsAcceptable() {
             for (int i = 0; i < 1_000_000; i++) {
@@ -317,6 +302,8 @@ class HashTableTest {
             for (int i = 0; i < 1_000_000; i++) {
                 hashTable.remove(i);
             }
+
+            assertThat(hashTable.getSize()).isEqualTo(0);
         }
 
         @Test
@@ -329,6 +316,112 @@ class HashTableTest {
             for (int i = 0; i < 1_000_000; i++) {
                 hashTable.contains(i);
             }
+        }
+    }
+
+    @Nested
+    class ConcurrencyTests {
+        private static final int INITIAL_CAPACITY = 16;
+        private static final int TEST_VOLUME = 30_000;
+
+        @BeforeEach
+        void setUp() {
+            hashTable = new HashTable(INITIAL_CAPACITY, 0.75, 2, 0.25);
+        }
+
+        @Test
+        @Timeout(value = 5)
+        @SneakyThrows
+        void givenConcurrentModifications_whenAdd_thenBehavesCorrectly() {
+            try (ExecutorService executorService = Executors.newFixedThreadPool(10)) {
+                List<Callable<Boolean>> tasks = new ArrayList<>();
+
+                for (int i = 0; i < TEST_VOLUME; i++) {
+                    final int finalI = i;
+                    tasks.add(() -> {
+                        boolean added = hashTable.add(finalI);
+                        sneakySleep(1);
+                        return added;
+                    });
+                }
+
+                var futures = executorService.invokeAll(tasks);
+                for (Future<Boolean> future : futures) {
+                    assertThat(future.get()).isTrue();
+                }
+
+                executorService.shutdown();
+                //noinspection ResultOfMethodCallIgnored
+                executorService.awaitTermination(1, TimeUnit.MINUTES);
+            }
+
+            assertThat(hashTable.getSize()).isEqualTo(TEST_VOLUME);
+        }
+
+        @Test
+        @Timeout(value = 5)
+        @SneakyThrows
+        void givenConcurrentModifications_whenAddAndRemove_thenBehavesCorrectly() {
+            try (ExecutorService executorService = Executors.newFixedThreadPool(10)) {
+                List<Callable<Boolean>> tasks = new ArrayList<>();
+
+                for (int i = 0; i < TEST_VOLUME; i++) {
+                    final int finalI = i;
+                    tasks.add(() -> {
+                        boolean added = hashTable.add(finalI);
+                        sneakySleep(1);
+                        boolean removed = hashTable.remove(finalI);
+                        return added && removed;
+                    });
+                }
+
+                var futures = executorService.invokeAll(tasks);
+                for (Future<Boolean> future : futures) {
+                    assertThat(future.get()).isTrue();
+                }
+
+                executorService.shutdown();
+                executorService.awaitTermination(1, TimeUnit.MINUTES);
+            }
+
+            assertThat(hashTable.getSize()).isEqualTo(0);
+        }
+
+        @Test
+        @Timeout(value = 20)
+        @SneakyThrows
+        void givenConcurrentModifications_whenAddAndCheckContains_thenBehavesCorrectly() {
+            try (ExecutorService executorService = Executors.newFixedThreadPool(10)) {
+                List<Callable<Boolean>> tasks = new ArrayList<>();
+                for (int i = 0; i < TEST_VOLUME; i++) {
+                    final int finalI = i;
+                    tasks.add(() -> {
+                        boolean added = hashTable.add(finalI);
+                        sneakySleep(1);
+                        boolean contains = hashTable.contains(finalI);
+                        sneakySleep(1);
+                        boolean removed = hashTable.remove(finalI);
+                        sneakySleep(1);
+                        boolean failedContains = !hashTable.contains(finalI);
+                        return added && contains && removed && failedContains;
+                    });
+                }
+
+                var futures = executorService.invokeAll(tasks);
+                for (Future<Boolean> future : futures) {
+                    assertThat(future.get()).isTrue();
+                }
+
+                executorService.shutdown();
+                executorService.awaitTermination(1, TimeUnit.MINUTES);
+            }
+
+            assertThat(hashTable.getSize()).isZero();
+        }
+
+        @SneakyThrows
+        private void sneakySleep(long millis) {
+            Thread.sleep(millis);
         }
     }
 }
