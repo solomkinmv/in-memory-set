@@ -1,4 +1,4 @@
-package in.solomk.inmemoryset.service.it.client;
+package in.solomk.inmemoryset.it.client;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

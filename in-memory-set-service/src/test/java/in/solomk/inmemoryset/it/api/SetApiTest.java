@@ -1,7 +1,7 @@
-package in.solomk.inmemoryset.service.it.api;
+package in.solomk.inmemoryset.it.api;
 
-import in.solomk.inmemoryset.service.it.BaseIntegrationTest;
-import in.solomk.inmemoryset.service.it.client.ServiceTestClient;
+import in.solomk.inmemoryset.it.BaseIntegrationTest;
+import in.solomk.inmemoryset.it.client.ServiceTestClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
