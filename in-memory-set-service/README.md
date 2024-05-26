@@ -6,8 +6,14 @@ Implemented using array and open addressing hash table.
 
 ### Build Docker image
 
+Regular:
 ```bash
  ./mvnw spring-boot:build-image
+```
+
+Native:
+```bash
+./mvnw -Pnative spring-boot:build-image
 ```
 
 ### Publish Docker image
