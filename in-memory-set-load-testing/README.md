@@ -9,5 +9,5 @@ Format:
 
 Request example:
 ```bash
- ./mvnw gatling:test -Dhost=http://44.197.253.211:80
+./mvnw gatling:test -Dhost=http://34.233.13.161:80
 ```

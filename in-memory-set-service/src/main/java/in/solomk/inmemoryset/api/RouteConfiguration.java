@@ -25,7 +25,7 @@ public class RouteConfiguration {
 
         return RouterFunctions.route()
                 .GET("/items/{itemValue}", hasItemHandler)
-                .POST("/items/{itemValue}", addItemHandler)
+                .PUT("/items/{itemValue}", addItemHandler)
                 .DELETE("/items/{itemValue}", removeItemHandler)
                 .build();
 

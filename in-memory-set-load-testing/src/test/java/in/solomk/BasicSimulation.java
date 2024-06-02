@@ -25,7 +25,7 @@ public class BasicSimulation extends Simulation {
     });
 
     private final ChainBuilder addItemRequest = exec(http("Add Request")
-            .post(session -> "/items/" + session.getInt("value"))
+            .put(session -> "/items/" + session.getInt("value"))
             .asJson());
 
     private final ChainBuilder removeItemRequest = exec(http("Remove Request")

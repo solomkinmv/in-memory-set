@@ -13,7 +13,7 @@ Accept: application/json
 
 ### Add item to set
 
-POST {{host}}/items/{{itemValue}}
+PUT {{host}}/items/{{itemValue}}
 Accept: application/json
 
 > {%

@@ -18,7 +18,7 @@ public class ServiceTestClient {
     }
 
     public ResponseSpec addItem(String itemValue) {
-        return webTestClient.post()
+        return webTestClient.put()
                 .uri("/items/" + itemValue)
                 .exchange();
     }
